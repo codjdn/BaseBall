@@ -38,8 +38,8 @@ import { GameState } from '../GameState';
 type Phase = 'waiting' | 'windup' | 'pitch' | 'live' | 'resolving' | 'over';
 
 export class GameScene extends Phaser.Scene {
-  readonly state = new GameState();
-  readonly difficulty = new DifficultyManager();
+  state = new GameState();
+  difficulty = new DifficultyManager();
 
   private sky!: Sky;
   private crowd!: Crowd;
@@ -69,9 +69,12 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     // Fresh state each run (Phaser reuses scene instances on restart).
-    Object.assign(this, { phase: 'waiting', phaseTimer: 0.8, currentPitch: null, hitResult: null });
-    (this as { state: GameState }).state = new GameState();
-    (this as { difficulty: DifficultyManager }).difficulty = new DifficultyManager();
+    this.phase = 'waiting';
+    this.phaseTimer = 0.8;
+    this.currentPitch = null;
+    this.hitResult = null;
+    this.state = new GameState();
+    this.difficulty = new DifficultyManager();
 
     this.sky = new Sky(this);
     new Stadium(this, this.sky.theme);
@@ -95,6 +98,8 @@ export class GameScene extends Phaser.Scene {
 
     this.input.on('pointermove', (p: Phaser.Input.Pointer) => this.batInput.setPointer(p.x, p.y));
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => this.batInput.setPointer(p.x, p.y));
+    // Keyboard is never *required*, but ESC is a handy desktop pause.
+    this.input.keyboard?.on('keydown-ESC', () => this.pauseGame());
 
     this.scene.launch(SCENES.hud, { state: this.state, wind: this.wind, gameScene: this });
 
@@ -190,10 +195,6 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.showCall('BALL', this.feedback().ball);
       state.addBall();
-    }
-    if (state.strikes === 0 && state.balls === 0 && !state.over) {
-      // Count resolved (strikeout/walk handled by GameState events).
-      if (storage.stats) storage.updateStats({ strikeouts: storage.stats.strikeouts });
     }
     this.toNextPitch(1.4);
   }
@@ -415,7 +416,7 @@ export class GameScene extends Phaser.Scene {
   private onGameOver(): void {
     this.phase = 'over';
     storage.updateStats({
-      strikeouts: storage.stats.strikeouts + 1, // the final strikeout that ended the game
+      strikeouts: storage.stats.strikeouts + this.state.outs, // outs only come from strikeouts
       walks: storage.stats.walks + this.state.walks,
     });
     audio.play('gameOver');

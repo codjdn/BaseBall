@@ -12,8 +12,12 @@ import { HudScene } from './game/scenes/HudScene';
 import { PauseScene } from './game/scenes/PauseScene';
 import { GameOverScene } from './game/scenes/GameOverScene';
 
+// `?renderer=canvas` forces the Canvas renderer — handy for very old GPUs,
+// blocklisted WebGL drivers, and automated testing environments.
+const forceCanvas = new URLSearchParams(location.search).get('renderer') === 'canvas';
+
 const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
+  type: forceCanvas ? Phaser.CANVAS : Phaser.AUTO,
   parent: 'app',
   width: DESIGN_WIDTH,
   height: DESIGN_HEIGHT,
@@ -38,6 +42,9 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const game = new Phaser.Game(config);
+
+// Exposed for debugging and automated smoke tests.
+(window as unknown as { __game?: Phaser.Game }).__game = game;
 
 game.events.once(Phaser.Core.Events.READY, () => {
   const loader = document.getElementById('boot-loader');

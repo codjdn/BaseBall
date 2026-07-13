@@ -10,7 +10,7 @@ import Phaser from 'phaser';
 import { DEPTHS, SCORING } from '../game/config';
 import type { DifficultyManager } from '../game/DifficultyManager';
 import { fenceDistanceAt } from '../physics/BallPhysics';
-import { project, projectRadius } from '../physics/projection';
+import { depthForZ, project, projectRadius } from '../physics/projection';
 import { clamp, randPick, randRange } from '../utils/math';
 
 type TargetKind = 'ring' | 'sign' | 'bucket' | 'bonus' | 'jackpot';
@@ -75,8 +75,9 @@ export class TargetManager {
 
     const ring = this.scene.add.graphics().setDepth(DEPTHS.targetsGround).setBlendMode(Phaser.BlendModes.ADD);
 
-    // Floating sign above the zone with the value text.
-    const p = project(x, 14, z);
+    // Floating sign above the zone with the value text. Depth-sorted by its
+    // world z so it draws in front of the fence/stands but behind near play.
+    const p = project(x, 9, z);
     const textSize = Math.max(11, Math.round(projectRadius(10, z)));
     const label = this.scene.add
       .text(0, 0, def.label, {
@@ -91,7 +92,7 @@ export class TargetManager {
     const bg = this.scene.add
       .rectangle(0, 0, label.width + pad * 2, label.height + pad, def.color, 0.85)
       .setStrokeStyle(2, 0xffffff, 0.9);
-    const sign = this.scene.add.container(p.x, p.y, [bg, label]).setDepth(DEPTHS.targetsGround + 1);
+    const sign = this.scene.add.container(p.x, p.y, [bg, label]).setDepth(depthForZ(z));
     sign.setScale(0);
     this.scene.tweens.add({ targets: sign, scale: 1, duration: 350, ease: 'Back.easeOut' });
 
@@ -200,8 +201,9 @@ export class TargetManager {
     }
 
     // Bob the floating sign above the ring.
-    const sp = project(t.x, 13 + Math.sin(t.age * 2.1) * 1.5, t.z);
+    const sp = project(t.x, 9 + Math.sin(t.age * 2.1) * 1.2, t.z);
     t.sign.setPosition(sp.x, sp.y);
+    t.sign.setDepth(depthForZ(t.z));
   }
 
   destroy(): void {

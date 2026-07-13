@@ -25,7 +25,8 @@ export class PauseScene extends Phaser.Scene {
     makePanel(this, cx, cy, 1080, 620);
     makeTitle(this, cx, cy - 268, 'PAUSED', 40);
 
-    buildSettingsPanel(this, cx, cy - 10);
+    // The panel background sits at DEPTHS.overlay; lift the controls above it.
+    buildSettingsPanel(this, cx, cy - 10).setDepth(DEPTHS.overlay + 1);
 
     makeButton(this, cx - 150, cy + 262, 'RESUME', () => this.resume(), { width: 240, height: 54 });
     makeButton(
