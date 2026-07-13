@@ -261,12 +261,12 @@ export class MenuScene extends Phaser.Scene {
       this.statusText.setText('STARTING CAMERA…');
       const [camOk, trackOk] = await Promise.all([
         cameraManager.status === 'running' ? Promise.resolve(true) : cameraManager.start(storage.settings.cameraFacing),
-        handTracker.load(),
+        handTracker.loadWithTimeout(),
       ]);
       if (!camOk || !trackOk) {
         this.statusText.setText(
           camOk
-            ? 'HAND TRACKING FAILED TO LOAD — CHECK CONNECTION, OR PLAY WITHOUT CAMERA'
+            ? 'HAND TRACKING IS TAKING TOO LONG — CHECK YOUR CONNECTION, OR PLAY WITHOUT CAMERA'
             : 'CAMERA UNAVAILABLE OR DENIED — TRY "PLAY WITHOUT CAMERA"',
         );
         this.starting = false;

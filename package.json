@@ -1,5 +1,5 @@
 {
-  "name": "baseball-finger-arcade",
+  "name": "finger-baseball",
   "version": "1.0.0",
   "description": "Browser arcade baseball game where your index finger is the bat, powered by MediaPipe hand tracking and Phaser 3",
   "type": "module",

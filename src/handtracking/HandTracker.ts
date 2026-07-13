@@ -86,6 +86,22 @@ export class HandTracker {
     return this.loadPromise;
   }
 
+  /**
+   * Same as `load()`, but resolves `false` if the CDN fetch (WASM + model,
+   * ~10-20MB from Google's servers) takes too long, instead of leaving a
+   * "STARTING CAMERA…" screen stuck forever on slow/unreliable networks.
+   * The underlying attempt keeps running in the background — if it succeeds
+   * late, `isLoaded` flips true and the next `load()`/`loadWithTimeout()`
+   * call resolves immediately.
+   */
+  loadWithTimeout(timeoutMs = 20000): Promise<boolean> {
+    const attempt = this.load();
+    return Promise.race([
+      attempt,
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), timeoutMs)),
+    ]);
+  }
+
   get isLoaded(): boolean {
     return this.landmarker !== null;
   }

@@ -46,10 +46,31 @@ const game = new Phaser.Game(config);
 // Exposed for debugging and automated smoke tests.
 (window as unknown as { __game?: Phaser.Game }).__game = game;
 
-game.events.once(Phaser.Core.Events.READY, () => {
+let bootReady = false;
+
+function hideBootLoader(): void {
   const loader = document.getElementById('boot-loader');
   if (loader) {
     loader.style.opacity = '0';
     setTimeout(() => loader.remove(), 450);
   }
+}
+
+game.events.once(Phaser.Core.Events.READY, () => {
+  bootReady = true;
+  hideBootLoader();
 });
+
+// Safety net: if the engine never reaches READY (e.g. a blocked/broken
+// renderer), don't leave the player staring at a bouncing ball forever —
+// offer a reload instead of a silent, permanent freeze.
+setTimeout(() => {
+  if (bootReady) return;
+  const loader = document.getElementById('boot-loader');
+  if (!loader) return;
+  loader.innerHTML = `
+    <div class="title">TAKING LONGER THAN USUAL…</div>
+    <button id="boot-reload" style="margin-top:4px;padding:10px 22px;border-radius:8px;border:none;background:#ffe66d;color:#0b1c33;font:bold 14px 'Arial Black', Arial, sans-serif;letter-spacing:1px;cursor:pointer;">RELOAD</button>
+  `;
+  document.getElementById('boot-reload')?.addEventListener('click', () => location.reload());
+}, 10000);
