@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0b1c33" />
+    <meta
+      name="description"
+      content="Arcade baseball in your browser — your index finger is the bat! Hand tracking powered by MediaPipe."
+    />
+    <title>Finger Baseball Arcade</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚾</text></svg>"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #0b1c33;
+        overflow: hidden;
+        overscroll-behavior: none;
+        touch-action: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      #app {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #app canvas {
+        display: block;
+      }
+      /* Hidden video element that feeds MediaPipe. Never shown directly;
+         the in-game preview re-draws it onto a texture. */
+      #webcam {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 2px;
+        height: 2px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      #boot-loader {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-family: 'Arial Black', Arial, sans-serif;
+        background: radial-gradient(circle at 50% 30%, #16375f, #0b1c33);
+        transition: opacity 0.4s ease;
+        z-index: 10;
+      }
+      #boot-loader .ball {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #ffffff, #d8d8d8);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+        animation: bounce 0.8s cubic-bezier(0.28, 0.84, 0.42, 1) infinite alternate;
+      }
+      @keyframes bounce {
+        from {
+          transform: translateY(-18px);
+        }
+        to {
+          transform: translateY(10px) scale(1.05, 0.95);
+        }
+      }
+      #boot-loader .title {
+        font-size: 20px;
+        letter-spacing: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <video id="webcam" autoplay playsinline muted></video>
+    <div id="boot-loader">
+      <div class="ball"></div>
+      <div class="title">FINGER BASEBALL</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

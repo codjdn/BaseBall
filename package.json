@@ -1,0 +1,25 @@
+{
+  "name": "baseball-finger-arcade",
+  "version": "1.0.0",
+  "description": "Browser arcade baseball game where your index finger is the bat, powered by MediaPipe hand tracking and Phaser 3",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.35",
+    "phaser": "3.90.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vite": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}
