@@ -94,6 +94,43 @@
       <div class="ball"></div>
       <div class="title">FINGER BASEBALL</div>
     </div>
+    <script>
+      // Boot watchdog that lives outside the game bundle. main.ts has its own
+      // fallback once it runs, but if the bundle itself never loads (404 after
+      // a bad deploy, blocked script, unsupported browser) nothing in it can
+      // fire — so this inline script turns that silent, permanent bouncing
+      // ball into a visible error with a reload button.
+      (function () {
+        function bootFailed(message) {
+          var loader = document.getElementById('boot-loader');
+          if (!loader || document.getElementById('boot-reload')) return;
+          loader.innerHTML =
+            '<div class="title">' + message + '</div>' +
+            '<button id="boot-reload" style="margin-top:4px;padding:10px 22px;border-radius:8px;border:none;background:#ffe66d;color:#0b1c33;font:bold 14px \'Arial Black\', Arial, sans-serif;letter-spacing:1px;cursor:pointer;">RELOAD</button>';
+          document.getElementById('boot-reload').addEventListener('click', function () {
+            location.reload();
+          });
+        }
+        // Resource errors don't bubble, but they can be captured on window.
+        window.addEventListener(
+          'error',
+          function (event) {
+            var target = event.target;
+            if (target && target.tagName === 'SCRIPT') {
+              bootFailed("COULDN'T LOAD THE GAME");
+            }
+          },
+          true
+        );
+        // Belt and braces: the bundle sets window.__game synchronously when it
+        // executes, so if it still isn't there well after load, it never ran.
+        window.addEventListener('load', function () {
+          setTimeout(function () {
+            if (!window.__game) bootFailed("COULDN'T START THE GAME");
+          }, 12000);
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
