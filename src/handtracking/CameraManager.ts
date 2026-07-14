@@ -36,7 +36,15 @@ export class CameraManager {
     return this.devices.length;
   }
 
-  async start(facing: CameraFacing = 'user'): Promise<boolean> {
+  /**
+   * Some browsers/OSes never settle the `getUserMedia` promise at all — an
+   * ignored permission prompt or a system-level camera block can leave it
+   * pending forever, which used to strand the "STARTING CAMERA…" screen
+   * permanently. Bound the wait so a stuck prompt degrades to "unavailable"
+   * instead of hanging; the underlying request keeps running in the
+   * background and still updates state if it resolves late.
+   */
+  async start(facing: CameraFacing = 'user', timeoutMs = 15000): Promise<boolean> {
     if (!navigator.mediaDevices?.getUserMedia) {
       this.statusValue = 'unavailable';
       return false;
@@ -44,6 +52,24 @@ export class CameraManager {
     this.stop();
     this.statusValue = 'starting';
     this.facingValue = facing;
+
+    const attempt = this.requestStream(facing);
+    let timedOut = false;
+    const timeout = new Promise<boolean>((resolve) => {
+      setTimeout(() => {
+        timedOut = true;
+        resolve(false);
+      }, timeoutMs);
+    });
+    const ok = await Promise.race([attempt, timeout]);
+    if (timedOut) {
+      if (this.statusValue === 'starting') this.statusValue = 'unavailable';
+      return false;
+    }
+    return ok;
+  }
+
+  private async requestStream(facing: CameraFacing): Promise<boolean> {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
